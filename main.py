@@ -11,10 +11,10 @@ from itertools import combinations
 random.seed(29112023)
 
 # Parameter values
-N_V = 3                                 # Number of pickup nodes
-N_K = 5                                 # Number of garbage trucks
-N_W = 1                                 # Number of types of waste
-N_P = 1                                 # Number of sorting units
+N_V = 5                                 # Number of pickup nodes
+N_K = 3                                 # Number of garbage trucks
+N_W = 2                                 # Number of types of waste
+N_P = 2                                 # Number of sorting units
 N_C = 2                                 # Number of types of garbage trucks
 
 x_map_min, x_map_max = 0.0, 100.0       # The range of the map in x-direction
@@ -76,7 +76,7 @@ class Waste:
 
 class Truck:
     def __init__(self):
-        # self.truck_type = truck_type                            # The truck type (which waste it can take)
+        # self.truck_type = truck_type                          # The truck type (which waste it can take)
         self.capacity = random.uniform(Q_min, Q_max)            # The capacity of the truck
         self.fixed_cost = Alpha                                 # The fixed cost of the garbage truck when it is used
         self.variable_cost = Beta                               # The variable cost of the garbage truck
@@ -104,6 +104,113 @@ for i in range(len(nodes)):
 trucks = np.array([Truck() for i in range(N_K)])
 # Create the waste types
 waste_types = range(N_W)
+
+### Manual manipulation of variables for verification ###
+# Pickup points amount of waste
+pickup_nodes[0].wastes[0].amount = 1
+pickup_nodes[0].wastes[1].amount = 5
+pickup_nodes[1].wastes[0].amount = 6
+pickup_nodes[1].wastes[1].amount = 1
+pickup_nodes[2].wastes[0].amount = 1
+pickup_nodes[2].wastes[1].amount = 7
+pickup_nodes[3].wastes[0].amount = 5
+pickup_nodes[3].wastes[1].amount = 9
+pickup_nodes[4].wastes[0].amount = 1
+pickup_nodes[4].wastes[1].amount = 1
+# Pickup points earliest times
+pickup_nodes[0].wastes[0].earliest_time = 34
+pickup_nodes[0].wastes[1].earliest_time = 28
+pickup_nodes[1].wastes[0].earliest_time = 12
+pickup_nodes[1].wastes[1].earliest_time = 29
+pickup_nodes[2].wastes[0].earliest_time = 11
+pickup_nodes[2].wastes[1].earliest_time = 10
+pickup_nodes[3].wastes[0].earliest_time = 11
+pickup_nodes[3].wastes[1].earliest_time = 15
+pickup_nodes[4].wastes[0].earliest_time = 23
+pickup_nodes[4].wastes[1].earliest_time = 31
+# Pickup points latest times
+pickup_nodes[0].wastes[0].latest_time = 86
+pickup_nodes[0].wastes[1].latest_time = 89
+pickup_nodes[1].wastes[0].latest_time = 56
+pickup_nodes[1].wastes[1].latest_time = 99
+pickup_nodes[2].wastes[0].latest_time = 62
+pickup_nodes[2].wastes[1].latest_time = 78
+pickup_nodes[3].wastes[0].latest_time = 78
+pickup_nodes[3].wastes[1].latest_time = 66
+pickup_nodes[4].wastes[0].latest_time = 65
+pickup_nodes[4].wastes[1].latest_time = 72
+# Collection times of types of waste
+pickup_nodes[0].wastes[0].time_needed = 1
+pickup_nodes[0].wastes[1].time_needed = 2
+pickup_nodes[1].wastes[0].time_needed = 3
+pickup_nodes[1].wastes[1].time_needed = 3
+pickup_nodes[2].wastes[0].time_needed = 2
+pickup_nodes[2].wastes[1].time_needed = 1
+pickup_nodes[3].wastes[0].time_needed = 3
+pickup_nodes[3].wastes[1].time_needed = 2
+pickup_nodes[4].wastes[0].time_needed = 3
+pickup_nodes[4].wastes[1].time_needed = 1
+# Earliest time to leave depot
+E_0w = np.array([0.0, 0.0])
+# Latest time to leave depot
+L_0w = np.array([5.0, 5.0])
+# Time for traversing arcs (between pickup nodes- depot only)
+t = {}
+# t[(nodes[0], nodes[2])] = t[(nodes[2], nodes[0])] = 9
+# t[(nodes[2], nodes[4])] = t[(nodes[4], nodes[2])] = 3
+# t[(nodes[2], nodes[5])] = t[(nodes[5], nodes[2])] = 1
+# t[(nodes[3], nodes[4])] = t[(nodes[4], nodes[3])] = 7
+# t[(nodes[0], nodes[1])] = t[(nodes[1], nodes[0])] = t[(nodes[1], nodes[2])] = t[(nodes[2], nodes[1])] = 10
+# t[(nodes[0], nodes[5])] = t[(nodes[5], nodes[0])] = t[(nodes[3], nodes[5])] = t[(nodes[5], nodes[3])] = 8
+# t[(nodes[1], nodes[3])] = t[(nodes[3], nodes[1])] = t[(nodes[3], nodes[2])] = t[(nodes[2], nodes[3])] = 2
+# t[(nodes[1], nodes[5])] = t[(nodes[1], nodes[4])] = t[(nodes[4], nodes[1])] = t[(nodes[5], nodes[1])] = 5
+# t[(nodes[0], nodes[3])] = t[(nodes[3], nodes[0])] = t[(nodes[0], nodes[4])] = t[(nodes[4], nodes[0])] = t[(nodes[4], nodes[5])] = t[(nodes[5], nodes[4])] = 6
+# t[(nodes[0], nodes[0])] = t[(nodes[1], nodes[1])] = t[(nodes[2], nodes[2])] = t[(nodes[3], nodes[3])] = t[(nodes[4], nodes[4])] = t[(nodes[5], nodes[5])] = 0
+# # Time for traversing arcs (between sorting units and pickup nodes)
+
+# t[(nodes[0], nodes[6])] = t[(nodes[0], nodes[7])] = t[(nodes[0], nodes[8])] = t[(nodes[0], nodes[9])] = t[(nodes[0], nodes[10])] = t[(nodes[0], nodes[11])] = 0
+# t[(nodes[1], nodes[6])] = t[(nodes[1], nodes[7])] = t[(nodes[1], nodes[8])] = t[(nodes[1], nodes[9])] = t[(nodes[1], nodes[10])] = t[(nodes[1], nodes[11])] = t[(nodes[3], nodes[6])] = t[(nodes[3], nodes[7])] = t[(nodes[3], nodes[8])] = t[(nodes[6], nodes[1])] = t[(nodes[7], nodes[1])] = t[(nodes[8], nodes[1])] = t[(nodes[9], nodes[1])] = t[(nodes[10], nodes[1])] = t[(nodes[11], nodes[1])] = 2 
+# t[(nodes[2], nodes[6])] = t[(nodes[2], nodes[7])] = t[(nodes[2], nodes[8])] = 5
+
+
+t_matrix = np.array([[0  , 10 , 9 , 6 , 6 , 8 , 0 , 0 , 0 , 0 , 0 , 0],
+                     [10 , 0  , 10, 2 , 5 , 5 , 2 , 2 , 2 , 2 , 2 , 2],
+                     [9  , 10 , 0 , 2 , 3 , 1 , 5 , 5 , 5 , 3 , 3 , 3],
+                     [6  , 2  , 2 , 0 , 7 , 8 , 2 , 2 , 2 , 1 , 1 , 1],
+                     [6  , 5  , 3 , 7 , 0 , 6 , 7 , 7 , 7 , 7 , 7 , 7],
+                     [8  , 5  , 1 , 8 , 6 , 0 , 10, 10, 10, 8 , 8 , 8],
+                     [0  , 2  , 5 , 2 , 7 , 10, 0 , 0 , 0 , 0 , 0 , 0],
+                     [0  , 2  , 5 , 2 , 7 , 10, 0 , 0 , 0 , 0 , 0 , 0],
+                     [0  , 2  , 5 , 2 , 7 , 10, 0 , 0 , 0 , 0 , 0 , 0],
+                     [0  , 2  , 3 , 1 , 7 , 8 , 0 , 0 , 0 , 0 , 0 , 0],
+                     [0  , 2  , 3 , 1 , 7 , 8 , 0 , 0 , 0 , 0 , 0 , 0],
+                     [0  , 2  , 3 , 1 , 7 , 8 , 0 , 0 , 0 , 0 , 0 , 0]])
+
+# print("t_matrix symmetry check:", (t_matrix == t_matrix.T))
+
+
+for idx1, node1 in enumerate(nodes):
+    for idx2, node2 in enumerate(nodes):
+        t[(node1, node2)] = t_matrix[idx1, idx2]
+
+
+
+
+#Truck type: 1 - Sv , 2 - Lv ; Sv capacity 34 , Lv capacity 48; two Sv and one Lv
+truck_Sv1 = Truck()
+truck_Sv2 = Truck()
+truck_Lv = Truck()
+
+truck_Sv1.capacity = 34
+truck_Sv1.latest_return_time = 100
+truck_Sv2.capacity = 34
+truck_Sv2.latest_return_time = 100
+
+truck_Lv.capacity = 48
+truck_Lv.latest_return_time = 100
+
+trucks = np.array([truck_Sv1 , truck_Sv2 , truck_Lv])
+
 
 ### Set up model ###
 # Instantiate VRP model
@@ -241,3 +348,6 @@ print("\n")
 
 ## Optimise the model ###
 VRP_model.optimize()
+
+
+# print(VRP_model.getVars())
