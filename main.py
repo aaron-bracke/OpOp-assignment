@@ -47,21 +47,27 @@ class Depot:
         self.x = random.uniform(x_map_min, x_map_max)   # The x-coordinate of the depot
         self.y = random.uniform(y_map_min, y_map_max)   # The y-coordinate of the depot
         self.wastes = np.array([Waste(w, 0) for w in range(N_W)])   # An array containing all the wastes of the node
-
+    def __repr__(self):
+        return f"depot"
 class Node:
-    def __init__(self):
+    def __init__(self, index):
         self.x = random.uniform(x_map_min, x_map_max)   # The x-coordinate of the node
         self.y = random.uniform(y_map_min, y_map_max)   # The y-coordinate of the node
         self.wastes = np.array([Waste(w) for w in range(N_W)])      # An array containing all the wastes of the node
-
+        self.index = index
+    def __repr__(self):
+        return f"N_{self.index}"
 class SortingUnit:
-    def __init__(self):
+    def __init__(self, index):
         self.x = random.uniform(x_map_min, x_map_max)   # The x-coordinate of the sorting unit
         self.y = random.uniform(y_map_min, y_map_max)   # The y-coordinate of the sorting unit
         self.wastes = np.array([Waste(w, 0) for w in range(N_W)])   # An array containing all the wastes of the node
+        self.index = index
     def SetPosition(self, x, y):
         self.x = x
         self.y = y
+    def __repr__(self):
+        return f"S_{self.index}"
 
 class Waste:
     def __init__(self, waste_type: int, amount = None):
@@ -75,13 +81,17 @@ class Waste:
         self.latest_time = random.uniform(self.earliest_time + self.time_needed, L_0w[self.waste_type])         # The latest time of picking up this waste at its node        
 
 class Truck:
-    def __init__(self):
+    def __init__(self, id):
         # self.truck_type = truck_type                          # The truck type (which waste it can take)
         self.capacity = random.uniform(Q_min, Q_max)            # The capacity of the truck
         self.fixed_cost = Alpha                                 # The fixed cost of the garbage truck when it is used
         self.variable_cost = Beta                               # The variable cost of the garbage truck
         self.additional_cost = Delta                            # The additional dwell time cost
         self.latest_return_time = random.uniform(P_min, P_max)  # The latest time for the garbage truck to get back to its home depot
+        self.id = id
+    def __repr__(self):
+        return f"truck_{self.id}"
+
 
 def TimeBetweenNodes(node1: Node, node2: Node):
     return np.sqrt((node1.x - node2.x)**2 + (node1.y - node2.y)**2)     # Assuming time between nodes is directly related to distance
@@ -89,8 +99,8 @@ def TimeBetweenNodes(node1: Node, node2: Node):
 ### Create instances ###
 # Create all the nodes
 depot = Depot()                                                         # Depot
-pickup_nodes = np.array([Node() for i in range(N_V)])                   # Set R
-sorting_units = np.array([SortingUnit() for i in range(N_P * N_K)])     # Set P
+pickup_nodes = np.array([Node(i) for i in range(N_V)])                   # Set R
+sorting_units = np.array([SortingUnit(i) for i in range(N_P * N_K)])     # Set P
 for i in range(N_P):
     sorting_units[i * N_K + 1].SetPosition(sorting_units[i * N_K].x, sorting_units[i * N_K].y)
     sorting_units[i * N_K + 2].SetPosition(sorting_units[i * N_K].x, sorting_units[i * N_K].y)
@@ -101,7 +111,7 @@ for i in range(len(nodes)):
     for j in range(len(nodes)):
         t[(nodes[i], nodes[j])] = TimeBetweenNodes(nodes[i], nodes[j])
 # Create all the garbage trucks
-trucks = np.array([Truck() for i in range(N_K)])
+#trucks = np.array([Truck() for i in range(N_K)])
 # Create the waste types
 waste_types = range(N_W)
 
@@ -197,9 +207,9 @@ for idx1, node1 in enumerate(nodes):
 
 
 #Truck type: 1 - Sv , 2 - Lv ; Sv capacity 34 , Lv capacity 48; two Sv and one Lv
-truck_Sv1 = Truck()
-truck_Sv2 = Truck()
-truck_Lv = Truck()
+truck_Sv1 = Truck("Sv1")
+truck_Sv2 = Truck("Sv2")
+truck_Lv = Truck("Lv")
 
 truck_Sv1.capacity = 34
 truck_Sv1.latest_return_time = 100
@@ -349,5 +359,16 @@ print("\n")
 ## Optimise the model ###
 VRP_model.optimize()
 
+all_vars = VRP_model.getVars()
+values = VRP_model.getAttr("X", all_vars)
+names = VRP_model.getAttr("VarName", all_vars)
 
-# print(VRP_model.getVars())
+x_data_plotting = []
+
+for name, val in zip(names, values):
+    li = list(name[2:-1].split(",")) # convert string result into a list
+    print(f'{name[0]} => {li} = {val}')
+    #if name[0] == "x" and val == 1: #if traversed node (val=1), add it to a list that later will be used to plot
+        # for
+        # x_data_plotting.append(li)
+    #print(name[1:])
